@@ -146,3 +146,7 @@ Code samples and posts that have helped in developing OWL Window Logger:
 * The gollum project readme file which helped write this readme doc. 
 -https://raw.github.com/github/gollum/master/README.md
 -https://github.com/github/gollum
+
+## Known Issues
+
+See: https://github.com/seanbuscay/owlwindowlogger/issues?labels=known+issue
