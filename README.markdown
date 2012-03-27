@@ -103,6 +103,24 @@ The following need installed on your system if they are not already:
 1. psutil
 1. win32process
 
+## STARTING OWL
+
+### Windows
+
+Run from your Python editor tool for testing and debugging.
+
+Run in the background to track work.
+
+-http://docs.python.org/faq/windows.html#how-do-i-run-a-python-program-under-windows
+
+Once executable:
+
+1. Double click owl.py
+
+ --OR--
+
+2. Create a shortcut to the owl.py file and put it in your startup folder.
+
 ## CONTRIBUTE
 
 If you'd like to hack on OWL, start by forking the repo on GitHub:
