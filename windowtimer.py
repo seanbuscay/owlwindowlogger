@@ -8,10 +8,16 @@ Created on Dec 28, 2011
 
 import wx
 import uuid
+from win32gui import GetWindowText, GetForegroundWindow
+# @todo: prob remove strftime & localtime
+from time import strftime, localtime, time
+# import owl custom modules
 import idledetect
 import threadname
-from win32gui import GetWindowText, GetForegroundWindow
-from time import strftime, localtime, time #@todo: prob remove strftime & localtime
+# import as logwrite so the module can be swapped out for other logwriters
+# such as: 
+# 1) import csvlogwrite as logwrite
+# 2) import sqlitelogwrite as logwrite
 import jsonlogwrite as logwrite
  
 class TaskBarApp(wx.Frame):
@@ -27,15 +33,18 @@ class TaskBarApp(wx.Frame):
         self.Bind(wx.EVT_TIMER, self.Log, id=self.ID_ICON_TIMER)
         self.SetIconTimer()
         self.Show(True)
+        # setup logging
         self.LogFile            = 'logs/' + str(uuid.uuid4())
+        # begin the data dictionary to be written as json entries in log
         self.Data               = {}
+        # call SetFreshData() to get time and any other available data
         self.SetFreshData()
         self.Data['Message'] = 'Starting a new logging session.'
+        # write a session startup entry
         logwrite.Write(self.Data,self.LogFile)
+        # most always set fresh data after logging
         self.SetFreshData()
         
-
-    
     def OnTaskBarLeftDClick(self, evt):
         if self.ICON_STATE == 0:
             self.StartIconTimer()
@@ -49,6 +58,7 @@ class TaskBarApp(wx.Frame):
             self.ICON_STATE = 0
  
     def OnTaskBarRightClick(self, evt):
+        # @todo: Find better way to make sure all threads close.
         self.StopIconTimer()
         self.tbicon.Destroy()
         self.Close(True)
@@ -75,13 +85,16 @@ class TaskBarApp(wx.Frame):
     def StopIconTimer(self):
         try:
             self.icontimer.Stop()
-            #need to refactor to have save last application vars before loging stop
             self.Data['Message'] = 'Stopping timer.'
             logwrite.Write(self.Data,self.LogFile)
             self.SetFreshData()
         except:
             pass
  
+    #logic in this function keeps it from logging an entry every second.
+    #instead it keeps adding up the idle stime
+    #tracks when the app window first went active
+    #writes tracking data upon change to next window
     def Log(self, evt):
       if self.Data['Idle'] <  idledetect.get_idle_duration():
          self.Data['Idle'] = idledetect.get_idle_duration()
@@ -96,6 +109,7 @@ class TaskBarApp(wx.Frame):
           self.Data['AppThreadID'] = p.pid
           self.Data['WinEnd']      = self.Now()
           logwrite.Write(self.Data,self.LogFile)
+          # reset data after log is written.
           self.SetFreshData()
 
     def SetFreshData(self):
