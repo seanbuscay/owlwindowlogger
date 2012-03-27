@@ -71,6 +71,19 @@ Until then, next steps include:
 
 ### Windows
 
+**Step 1:** Clone or download the OWL project from: 
+
+https://github.com/seanbuscay/owlwindowlogger
+
+    git clone git@github.com:seanbuscay/owlwindowlogger.git
+    
+**Step 2:** Create a folder called, "logs" in the project folder.  
+
+Make sure Python has permission to write to it.
+
+Note: Anything in the logs directory is ignored by git so you can commit changes
+without sending your log data by accident.  
+
 The following need installed on your system if they are not already:
 
 1. Python 2.7x  -http://www.python.org/getit/
