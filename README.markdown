@@ -1,4 +1,5 @@
-# owlwindowlogger -- An active window logger. Built in Python. Logs to JSON.
+# owlwindowlogger -- An active window logger. 
+Built in Python. Logs to JSON.
 =============================================================================
 
 ## PURPOSE
@@ -64,7 +65,7 @@ Until then, next steps include:
 
 * Installation is not hard, but it's not automatic yet.  
 * For Python programmers it will be easy.  
-* For programmers is should be pretty basic.  You'll need to install some stuff.
+* For programmers it should be pretty basic.  You'll need to install some stuff.
 * For non-programmers or non-major techies: We'll have an installer soon.
 
 ### Windows
