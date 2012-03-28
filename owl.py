@@ -116,7 +116,7 @@ class TaskBarApp(wx.Frame):
         self.Data.clear()
         self.Data['Active']     = GetForegroundWindow()
         activetext = GetWindowText(self.Data['Active'])
-        # seems to fix the encoding erros for writing json
+        # seems to fix the encoding erros for json.dumps
         activetext = activetext.encode('string_escape')
         self.Data['ActiveText'] = activetext
         self.Data['Idle']       = 0
