@@ -7,7 +7,7 @@ except ImportError: import json
 
 from time import localtime, time
 def Write(data, logfile):
-        logfile = logfile + '.json'
+        logfile = logfile + '.log'
         data['Timestamp'] = int(time())
         #text = json.dumps(data) #normal
         #text = json.dumps(data, sort_keys=True, indent=2) #nicely formated
