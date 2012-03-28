@@ -29,12 +29,6 @@ OWL tracks and logs your computer system's:
 4. Application thread names for active windows
 5. Other variables through easy module extension
 
-### Wanted
-
-1. Testers
-2. Contributers
-3. Python Code Reviewers (I'm new to Python. Please critique.)
-
 ## ROADMAP
 
 For right now, I'll just summarize the plan for OWL.
@@ -122,6 +116,12 @@ Once executable:
 2. Create a shortcut to the owl.py file and put it in your startup folder.
 
 ## CONTRIBUTE
+
+### Wanted
+
+1. Testers
+2. Code Contributers
+3. Python Code Reviewers (I'm new to Python. Please critique.)
 
 If you'd like to hack on OWL, start by forking the repo on GitHub:
 
