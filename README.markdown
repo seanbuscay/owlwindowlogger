@@ -147,6 +147,11 @@ Code samples and posts that have helped in developing OWL Window Logger:
 -https://raw.github.com/github/gollum/master/README.md
 -https://github.com/github/gollum
 
-## Known Issues
+## KNOWN ISSUES
 
 See: https://github.com/seanbuscay/owlwindowlogger/issues?labels=known+issue
+
+## TODOS AND DEV NOTES
+
+- Remembering to create the logs folder is annoying.  
+- Need to check if it exists and create it if not.
