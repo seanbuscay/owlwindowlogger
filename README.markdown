@@ -65,13 +65,11 @@ Until then, next steps include:
 
 ### Windows
 
-**Step 1:** Clone or download the OWL project from: 
+Clone or download the OWL project from: 
 
 https://github.com/seanbuscay/owlwindowlogger
 
     git clone git@github.com:seanbuscay/owlwindowlogger.git
-    
-**Step 2:** Create a folder called, "logs" in the project folder.  
 
 Make sure Python has permission to write to it.
 
@@ -152,6 +150,3 @@ Code samples and posts that have helped in developing OWL Window Logger:
 See: https://github.com/seanbuscay/owlwindowlogger/issues?labels=known+issue
 
 ## TODOS AND DEV NOTES
-
-- Remembering to create the logs folder is annoying.  
-- Need to check if it exists and create it if not.
