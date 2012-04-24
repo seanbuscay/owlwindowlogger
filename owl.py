@@ -34,7 +34,7 @@ class TaskBarApp(wx.Frame):
         self.SetIconTimer()
         self.Show(True)
         # setup logging
-        self.LogFile            = 'logs/' + str(uuid.uuid4())
+        self.LogFile            = 'logs/' + strftime("%Y-%b-%d", localtime())
         # begin the data dictionary to be written as json entries in log
         self.Data               = {}
         # call SetFreshData() to get time and any other available data
