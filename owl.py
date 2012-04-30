@@ -108,6 +108,7 @@ class TaskBarApp(wx.Frame):
           self.Data['AppThread']   = p.name 
           self.Data['AppThreadID'] = p.pid
           self.Data['WinEnd']      = self.Now()
+          self.Data['date_end_time']   = strftime("%d %b %Y - %H:%M:%S")
           logwrite.Write(self.Data,self.LogFile)
           # reset data after log is written.
           self.SetFreshData()
@@ -115,13 +116,12 @@ class TaskBarApp(wx.Frame):
     def SetFreshData(self):
         self.Data.clear()
         self.Data['Active']     = GetForegroundWindow()
-        activetext = GetWindowText(self.Data['Active'])
-        # seems to fix the encoding erros for json.dumps
-        activetext = activetext.encode('string_escape')
+        activetext = GetWindowText(self.Data['Active'])    
         self.Data['ActiveText'] = activetext
         self.Data['Idle']       = 0
         self.Data['TotalIdle']  = 0
         self.Data['WinStart']   = self.Now()
+        self.Data['date_start_time'] = strftime("%d %b %Y - %H:%M:%S")
     
     def Now(self):
         localtime = int(time()) 
