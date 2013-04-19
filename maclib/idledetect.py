@@ -1,8 +1,9 @@
-'''
+# coding=utf-8
+"""
 Created on Dec 28, 2011
 
 @author: Sean Buscay
-'''
+"""
 
 import Quartz.CoreGraphics
 

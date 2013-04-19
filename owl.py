@@ -1,87 +1,99 @@
+#!/usr/bin/env python
 # encoding:UTF-8
 
-'''
+"""
 Created on Dec 28, 2011
 
 @author: Sean Buscay
-'''
+"""
 
-# @todo: prob remove strftime & localtime
+# Import Python Core Modules
 import uuid
 import time
-# import owl custom modules
-import idledetect
-import activewindow
-# import as logwrite so the module can be swapped out for other logwriters
-# such as:
-# 1) import csvlogwrite as logwrite
-# 2) import sqlitelogwrite as logwrite
-import jsonlogwrite as logwrite
+
+# Import tablib @see https://github.com/kennethreitz/tablib
+import tablib
+
+from maclib import activewindow, idledetect
 
 
 class OwlApp():
     def __init__(self):
-        # setup logging
-        self.LogFile = 'logs/' + time.strftime("%Y-%b-%d", time.localtime())
-        # begin the data dictionary to be written as json entries in log
-        self.Data = {}
-        # call SetFreshData() to get time and any other available data
-        self.SetFreshData()
-        #self.Data['Message'] = 'Starting a new logging session.'
-        # write a session startup entry
-        #logwrite.Write(self.Data, self.LogFile)
-        # most always set fresh data after logging
-        #self.SetFreshData()
 
+        # Define log file.
+        self.log_file = 'logs/' + time.strftime("%Y-%b-%d-%H-%M-%S", time.localtime())
 
-    # logic in this function keeps it from logging an entry every second.
-    # instead it keeps adding up the idle stime
-    # tracks when the app window first went active
-    # writes tracking data upon change to next window
-    def Log(self):
-        if self.Data['Idle'] < idledetect.get_idle_duration():
-            self.Data['Idle'] = idledetect.get_idle_duration()
+        global data
+        data = tablib.Dataset()
+        data.headers = ['id', 'window_text', 'application_name', 'window_name', 'start', 'stop', 'seconds',
+                        'greatest_idle_time']
 
-        if self.Data['Idle'] > idledetect.get_idle_duration():  # means we had activity since last
-            self.Data['TotalIdle'] = self.Data['TotalIdle'] + self.Data['Idle']
-            self.Data['Idle'] = 0
+        # Define initial variable values.
+        self.id = str(uuid.uuid4())
+        self.window_text = 'Owl Timer, Startup'
+        self.application_name = 'Owl Timer'
+        self.window_name = 'Startup'
+        self.start = self.now()
+        self.stop = self.now()
+        self.seconds = 1
+        self.greatest_idle_time = 1
 
-        if self.Data['ActiveText'] != activewindow.get_activeWindowName():
-            self.Data['WinEnd'] = self.Now()
-            self.Data['date_end_time'] = time.strftime("%d %b %Y - %H:%M:%S")
-            self.Data['Timestamp'] = self.Now()
-            self.Data['GUID'] = str(uuid.uuid4())
-            self.Data['Seconds'] = self.Data['WinEnd'] - self.Data['WinStart']
-            self.Data['date_time_stamp'] = time.strftime("%d %b %Y - %H:%M:%S")
-            self.Data['ApplicationName'] = activewindow.get_applicationName(self.Data['ActiveText'])
-            self.Data['WindowName'] = activewindow.get_windowName(self.Data['ActiveText'])
+        self.append_entry()
 
-            logData = {}
-            logData['ID'] = self.Data['GUID'] = str(uuid.uuid4())
-            logData['Window Text'] = self.Data['ActiveText']
-            logData['Application Name'] = self.Data['ApplicationName']
-            logData['Application Window Name'] = self.Data['WindowName']
-            logData['Time Start'] = self.Data['date_start_time']
-            logData['Time End'] = self.Data['date_end_time']
-            logData['Seconds'] = self.Data['Seconds']
-            logData['Idle Time'] = self.Data['TotalIdle']
+        self.set_fresh_variables()
 
-            logwrite.Write(logData, self.LogFile)
-            # reset data after log is written.
-            self.SetFreshData()
+    # Logic in this function keeps it from logging an entry every second.
+    # Instead it keeps track of the greatest idle time in between logging events,
+    # tracks when the app window first went active, and writes tracking data upon 
+    # change to next window.
 
-    def SetFreshData(self):
-        self.Data.clear()
-        activetext = activewindow.get_activeWindowName()
-        self.Data['ActiveText'] = activetext
-        self.Data['Idle'] = 0
-        self.Data['TotalIdle'] = 0
-        self.Data['WinStart'] = self.Now()
-        self.Data['date_start_time'] = time.strftime("%d %b %Y - %H:%M:%S")
+    def log(self):
 
-    def Now(self):
-        localtime = int(time.time())
-        return localtime
+        # If the time since the last user input (idle duration) is greater than the time in the
+        # greatest_idle_time variable, the greatest_idle_time value gets set to the greater system 
+        # idle duration returned by idledetect.get_idle_duration().
+        if idledetect.get_idle_duration() > self.greatest_idle_time:
+            self.greatest_idle_time = idledetect.get_idle_duration()
+
+        # If the window text being tracked is not the text returned by get_activeWindowName
+        # then a new window is active.
+        if self.window_text != activewindow.get_activeWindowName():
+            self.seconds = self.time_stamp() - self.start_time_stamp
+
+            self.append_entry()
+
+            with open(self.log_file+'.json', 'wb') as f:
+                f.write(data.json)
+
+            with open(self.log_file+'.xls', 'wb') as f:
+                f.write(data.xls)
+
+            self.set_fresh_variables()
+
+    def append_entry(self):
+        data.append(
+            [self.id, self.window_text, self.application_name, self.window_name, self.start, self.stop, self.seconds,
+             self.greatest_idle_time])
+
+    def set_fresh_variables(self):
+
+        self.start_time_stamp = self.time_stamp()
+
+        # Add values for logged variables.
+        self.id = str(uuid.uuid4())
+        self.window_text = activewindow.get_activeWindowName()
+        self.application_name = activewindow.get_applicationName(self.window_text)
+        self.window_name = activewindow.get_windowName(self.window_text)
+        self.start = self.now()
+        self.stop = self.now()
+        self.seconds = 0
+        self.greatest_idle_time = 0
+
+    def time_stamp(self):
+        return int(time.time())
+
+    def now(self):
+        return time.strftime("%d %b %Y - %H:%M:%S")
 
 
 if __name__ == '__main__':
@@ -89,6 +101,5 @@ if __name__ == '__main__':
     app = OwlApp()
 
     while True:
-        pass
         time.sleep(1)
-        app.Log()
+        app.log()

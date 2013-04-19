@@ -1,8 +1,9 @@
-'''
+# coding=utf-8
+"""
 Created on Apr 14, 2013
 
 @author: buscay
-'''
+"""
 import applescript
 
 script = """

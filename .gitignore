@@ -27,7 +27,8 @@
 *.sql
 *.sqlite
 *.tmp
-
+*.json
+*.xls
 # OS generated files #
 ######################
 .DS_Store*
