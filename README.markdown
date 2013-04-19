@@ -1,5 +1,5 @@
 # owlwindowlogger -- An active window logger. 
-Built in Python. Logs to JSON.
+Built in Python. Logs to JSON, CSV, or XLS.
 =============================================================================
 
 ## PURPOSE
@@ -15,19 +15,20 @@ computers better track what they spent their day working on.
 ## DESCRIPTION
 
 An active window logger to help track time spent working in different 
-computer applications and windows. Built in Python. Logs to JSON.
+computer applications and windows. Built in Python. Logs to JSON, CSV, or XLS.
 
 * OWL is built in Python.
 * Log files are written to JSON to be consumable via many systems.
-* Logging may be extended to write to CSV files or other formats.
+* Log files may also be written to to CSV and XLS file formats.
 
 OWL tracks and logs your computer system's:
 
 1. Active window titles
-2. Start and stop times when windows become active and stop being active
-3. Idle time
-4. Application thread names for active windows
-5. Other variables through easy module extension
+2. Active window application title
+3. Active window document, directory, or url title
+4. Start and stop times when windows become active and stop being active
+5. The length of time in seconds the window is active 
+6. The greatest idle time within the period the window is active 
 
 ## ROADMAP
 
@@ -45,7 +46,7 @@ Part 2 (a rich internet application component) is a long way off.
 Until then, next steps include:
 
 1. basic analysis tools to summarize and review activity from day to day
-2. porting OWL to OSX and Linux
+2. porting OWL to Linux and refactoring the Windows version
 3. testing and debugging
 4. packaging for easy distribution
 
@@ -53,8 +54,9 @@ Until then, next steps include:
 
 -- It's a mature alpha.
 
-* Works on Windows
-* Coding for Linux and OSX are next.
+* Works on OSX
+* Older version works on Windows.
+* Coding for Linux is next.
 
 ## INSTALLATION
 
@@ -74,7 +76,7 @@ https://github.com/seanbuscay/owlwindowlogger
 Make sure Python has permission to write to it.
 
 Note: Anything in the logs directory is ignored by git so you can commit changes
-without sending your log data by accident.  
+to your own fork without committing your log data by accident.  
 
 The following need installed on your system if they are not already:
 
@@ -118,7 +120,7 @@ Once executable:
 ### Wanted
 
 1. Testers
-2. Code Contributers
+2. Code Contributors
 3. Python Code Reviewers (I'm new to Python. Please critique.)
 
 If you'd like to hack on OWL, start by forking the repo on GitHub:
@@ -141,7 +143,7 @@ Code samples and posts that have helped in developing OWL Window Logger:
 
 * The code that helped get me started:
 -http://scott.sherrillmix.com/blog/programmer/active-window-logger/
-* The gollum project readme file which helped write this readme doc. 
+* The Gollum project readme file which helped write this readme doc. 
 -https://raw.github.com/github/gollum/master/README.md
 -https://github.com/github/gollum
 

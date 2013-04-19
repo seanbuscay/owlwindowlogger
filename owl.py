@@ -1,143 +1,105 @@
-#encoding:UTF-8
+#!/usr/bin/env python
+# encoding:UTF-8
 
-'''
+"""
 Created on Dec 28, 2011
 
 @author: Sean Buscay
-'''
+"""
 
-import wx
+# Import Python Core Modules
 import uuid
-from win32gui import GetWindowText, GetForegroundWindow
-# @todo: prob remove strftime & localtime
-from time import strftime, localtime, time
-# import owl custom modules
-import idledetect
-import threadname
-# import as logwrite so the module can be swapped out for other logwriters
-# such as: 
-# 1) import csvlogwrite as logwrite
-# 2) import sqlitelogwrite as logwrite
-import jsonlogwrite as logwrite
- 
-class TaskBarApp(wx.Frame):
-    def __init__(self, parent, id, title):
-        wx.Frame.__init__(self, parent, -1, title, size=(1, 1), style=wx.FRAME_NO_TASKBAR | wx.NO_FULL_REPAINT_ON_RESIZE)
-        self.ICON_STATE = 1
-        self.ID_ICON_TIMER = wx.NewId()
-        self.tbicon = wx.TaskBarIcon()
-        icon = wx.Icon('logon.ico', wx.BITMAP_TYPE_ICO)
-        self.tbicon.SetIcon(icon, 'Logging')
-        self.tbicon.Bind(wx.EVT_TASKBAR_LEFT_DCLICK, self.OnTaskBarLeftDClick)
-        self.tbicon.Bind(wx.EVT_TASKBAR_RIGHT_UP, self.OnTaskBarRightClick)
-        self.Bind(wx.EVT_TIMER, self.Log, id=self.ID_ICON_TIMER)
-        self.SetIconTimer()
-        self.Show(True)
-        # setup logging
-        self.LogFile            = 'logs/' + strftime("%Y-%b-%d", localtime())
-        # begin the data dictionary to be written as json entries in log
-        self.Data               = {}
-        # call SetFreshData() to get time and any other available data
-        self.SetFreshData()
-        self.Data['Message'] = 'Starting a new logging session.'
-        # write a session startup entry
-        logwrite.Write(self.Data,self.LogFile)
-        # most always set fresh data after logging
-        self.SetFreshData()
-        
-    def OnTaskBarLeftDClick(self, evt):
-        if self.ICON_STATE == 0:
-            self.StartIconTimer()
-            icon = wx.Icon('logon.ico', wx.BITMAP_TYPE_ICO)
-            self.tbicon.SetIcon(icon, 'Logging')
-            self.ICON_STATE = 1
-        else:
-            self.StopIconTimer()
-            icon = wx.Icon('logoff.ico', wx.BITMAP_TYPE_ICO)
-            self.tbicon.SetIcon(icon, 'Not Logging')
-            self.ICON_STATE = 0
- 
-    def OnTaskBarRightClick(self, evt):
-        # @todo: Find better way to make sure all threads close.
-        self.StopIconTimer()
-        self.tbicon.Destroy()
-        self.Close(True)
-        self.Data['Message'] = 'Owl Timer Shutting Down.'
-        logwrite.Write(self.Data,self.LogFile)
-        wx.GetApp().ProcessIdle()
-        wx.GetApp().Exit()
-        wx.Exit()
-       
-    def SetIconTimer(self):
-        self.icontimer = wx.Timer(self, self.ID_ICON_TIMER)
-        self.icontimer.Start(1000)
+import time
 
- 
-    def StartIconTimer(self):
-        try:
-            self.icontimer.Start(1000)
-            self.Data['Message'] = 'Starting timer.'
-            logwrite.Write(self.Data,self.LogFile)
-            self.SetFreshData()
-        except:
-            pass
- 
-    def StopIconTimer(self):
-        try:
-            self.icontimer.Stop()
-            self.Data['Message'] = 'Stopping timer.'
-            logwrite.Write(self.Data,self.LogFile)
-            self.SetFreshData()
-        except:
-            pass
- 
-    #logic in this function keeps it from logging an entry every second.
-    #instead it keeps adding up the idle stime
-    #tracks when the app window first went active
-    #writes tracking data upon change to next window
-    def Log(self, evt):
-      if self.Data['Idle'] <  idledetect.get_idle_duration():
-         self.Data['Idle'] = idledetect.get_idle_duration()
-      
-      if self.Data['Idle'] >  idledetect.get_idle_duration(): #means we had activity since last
-         self.Data['TotalIdle'] = self.Data['TotalIdle'] + self.Data['Idle']
-         self.Data['Idle'] = 0
+# Import tablib @see https://github.com/kennethreitz/tablib
+import tablib
 
-      if self.Data['ActiveText']  != GetWindowText(GetForegroundWindow()):
-          p = threadname.get_threadname(self.Data['Active'])
-          self.Data['AppThread']   = p.name 
-          self.Data['AppThreadID'] = p.pid
-          self.Data['WinEnd']      = self.Now()
-          self.Data['date_end_time']   = strftime("%d %b %Y - %H:%M:%S")
-          logwrite.Write(self.Data,self.LogFile)
-          # reset data after log is written.
-          self.SetFreshData()
+from maclib import activewindow, idledetect
 
-    def SetFreshData(self):
-        self.Data.clear()
-        self.Data['Active']     = GetForegroundWindow()
-        activetext = GetWindowText(self.Data['Active'])    
-        self.Data['ActiveText'] = activetext
-        self.Data['Idle']       = 0
-        self.Data['TotalIdle']  = 0
-        self.Data['WinStart']   = self.Now()
-        self.Data['date_start_time'] = strftime("%d %b %Y - %H:%M:%S")
-    
-    def Now(self):
-        localtime = int(time()) 
-        return localtime
 
- 
-class MyApp(wx.App):
-    def OnInit(self):
-        frame = TaskBarApp(None, -1, ' ')
-        frame.Center(wx.BOTH)
-        frame.Show(True)
-        return True
- 
-def main():
-    app = MyApp(0)
-    app.MainLoop()
- 
+class OwlApp():
+    def __init__(self):
+
+        # Define log file.
+        self.log_file = 'logs/' + time.strftime("%Y-%b-%d-%H-%M-%S", time.localtime())
+
+        global data
+        data = tablib.Dataset()
+        data.headers = ['id', 'window_text', 'application_name', 'window_name', 'start', 'stop', 'seconds',
+                        'greatest_idle_time']
+
+        # Define initial variable values.
+        self.id = str(uuid.uuid4())
+        self.window_text = 'Owl Timer, Startup'
+        self.application_name = 'Owl Timer'
+        self.window_name = 'Startup'
+        self.start = self.now()
+        self.stop = self.now()
+        self.seconds = 1
+        self.greatest_idle_time = 1
+
+        self.append_entry()
+
+        self.set_fresh_variables()
+
+    # Logic in this function keeps it from logging an entry every second.
+    # Instead it keeps track of the greatest idle time in between logging events,
+    # tracks when the app window first went active, and writes tracking data upon 
+    # change to next window.
+
+    def log(self):
+
+        # If the time since the last user input (idle duration) is greater than the time in the
+        # greatest_idle_time variable, the greatest_idle_time value gets set to the greater system 
+        # idle duration returned by idledetect.get_idle_duration().
+        if idledetect.get_idle_duration() > self.greatest_idle_time:
+            self.greatest_idle_time = idledetect.get_idle_duration()
+
+        # If the window text being tracked is not the text returned by get_activeWindowName
+        # then a new window is active.
+        if self.window_text != activewindow.get_activeWindowName():
+            self.seconds = self.time_stamp() - self.start_time_stamp
+
+            self.append_entry()
+
+            with open(self.log_file+'.json', 'wb') as f:
+                f.write(data.json)
+
+            with open(self.log_file+'.xls', 'wb') as f:
+                f.write(data.xls)
+
+            self.set_fresh_variables()
+
+    def append_entry(self):
+        data.append(
+            [self.id, self.window_text, self.application_name, self.window_name, self.start, self.stop, self.seconds,
+             self.greatest_idle_time])
+
+    def set_fresh_variables(self):
+
+        self.start_time_stamp = self.time_stamp()
+
+        # Add values for logged variables.
+        self.id = str(uuid.uuid4())
+        self.window_text = activewindow.get_activeWindowName()
+        self.application_name = activewindow.get_applicationName(self.window_text)
+        self.window_name = activewindow.get_windowName(self.window_text)
+        self.start = self.now()
+        self.stop = self.now()
+        self.seconds = 0
+        self.greatest_idle_time = 0
+
+    def time_stamp(self):
+        return int(time.time())
+
+    def now(self):
+        return time.strftime("%d %b %Y - %H:%M:%S")
+
+
 if __name__ == '__main__':
-    main()
+
+    app = OwlApp()
+
+    while True:
+        time.sleep(1)
+        app.log()
