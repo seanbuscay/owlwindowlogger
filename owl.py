@@ -21,7 +21,7 @@ class OwlApp():
     def __init__(self):
 
         # Define log file.
-        self.log_file = 'logs/' + time.strftime("%Y-%b-%d-%H-%M-%S", time.localtime())
+        self.log_file = '/Users/buscay/Owl/logs/' + time.strftime("%Y-%b-%d-%H-%M-%S", time.localtime())
 
         global data
         data = tablib.Dataset()
@@ -61,12 +61,13 @@ class OwlApp():
             self.seconds = self.time_stamp() - self.start_time_stamp
 
             self.append_entry()
+           # self.log_to_screen()
 
             with open(self.log_file+'.json', 'wb') as f:
                 f.write(data.json)
 
-            with open(self.log_file+'.xls', 'wb') as f:
-                f.write(data.xls)
+          #  with open(self.log_file+'.xls', 'wb') as f:
+           #     f.write(data.xls)
 
             self.set_fresh_variables()
 
@@ -74,6 +75,10 @@ class OwlApp():
         data.append(
             [self.id, self.window_text, self.application_name, self.window_name, self.start, self.stop, self.seconds,
              self.greatest_idle_time])
+             
+    def log_to_screen(self):
+        msg = ([self.application_name, self.window_name, self.seconds])
+        print msg
 
     def set_fresh_variables(self):
 
